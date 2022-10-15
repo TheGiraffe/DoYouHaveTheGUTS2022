@@ -7,8 +7,15 @@
     <script>
     var config = {
         type: Phaser.AUTO,
-        width: 1920,
-        height: 1080,
+        width: 1800,
+        height: 900,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: {y:300},
+                debug: false
+            }
+        },
         scene: {
             preload: preload,
             create: create,
@@ -19,11 +26,36 @@
     var game = new Phaser.Game(config)
 
     function preload(){
-
+        this.load.image('sky', 'assets/sky.png');
+        this.load.image('ground', 'assets/platform.png');
+        this.load.image('horizontalwall','assets/bottom_wall.png');
+        this.load.image('sidewall','assets/side_wall.png')
+        this.load.image('wall','assets/wall.png')
+        this.load.image('star', 'assets/star.png');
+        this.load.image('bomb', 'assets/bomb.png');
+        this.load.spritesheet('dude', 
+            'assets/dude.png',
+            { frameWidth: 32, frameHeight: 48 });
     }
 
     function create(){
+        this.add.image(900, 450, 'sky');
+        
+        platforms = this.physics.add.staticGroup();
 
+        platforms.create(50, 0, 'sidewall');
+        platforms.create(900, 850, 'horizontalwall');
+        platforms.create(900, 50, 'horizontalwall');
+
+        platforms.create(450, 250, 'ground');
+        platforms.create(1550, 250, 'ground');
+        
+        platforms.create(750, 450, 'ground');
+        platforms.create(1850, 450, 'ground');
+
+        platforms.create(450, 650, 'ground');
+        platforms.create(1550, 650, 'ground');
+        
     }
 
     function update(){
