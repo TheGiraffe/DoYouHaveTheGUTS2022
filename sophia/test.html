@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+</head>
+<body>
+    <script>
+    var config = {
+        type: Phaser.AUTO,
+        width: 1800,
+        height: 900,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 200 }
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create
+        }
+    };
+
+    var game = new Phaser.Game(config);
+
+    function preload ()
+    {
+        this.load.setBaseURL('https://sophiaisfabulous.com');
+
+        this.load.image('bg', 'css/bg.png');
+        this.load.image('sophia', 'css/icon.png');
+        this.load.image('dot', 'css/icon2.png');
+    }
+
+    function create ()
+    {
+        this.add.image(400, 300, 'bg');
+
+        var particles = this.add.particles('dot');
+
+        var emitter = particles.createEmitter({
+            speed: 100,
+            scale: { start: 1, end: 0 },
+            blendMode: 'ADD'
+        });
+
+        var sophia = this.physics.add.image(20, 20, 'sophia');
+
+        sophia.setVelocity(500, 800);
+        sophia.setBounce(1, 1);
+        sophia.setCollideWorldBounds(true);
+
+        emitter.startFollow(sophia);
+    }
+    </script>
+</body>
+</html>
