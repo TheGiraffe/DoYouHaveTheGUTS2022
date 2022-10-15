@@ -22,7 +22,13 @@
             update: update
         }
     }
-    
+    var player;
+    var stars;
+    var platforms;
+    var cursors;
+    var score = 0;
+    var scoreText;
+
     var game = new Phaser.Game(config)
 
     function preload(){
@@ -35,7 +41,7 @@
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 
             'assets/dude.png',
-            { frameWidth: 50, frameHeight: 70 });
+            { frameWidth: 60, frameHeight: 90 });
     }
 
     function create(){
@@ -108,8 +114,12 @@
         function collectStar (player, star)
         {
             star.disableBody(true, true);
+            score += 10;
+            scoreText.setText('Score: ' + score);
         }
         
+        // Score Text:
+        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
     }
 
     function update(){
