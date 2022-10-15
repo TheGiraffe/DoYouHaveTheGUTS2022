@@ -12,7 +12,7 @@
         physics: {
             default: 'arcade',
             arcade: {
-                gravity: {y:300},
+                gravity: {y:50},
                 debug: false
             }
         },
@@ -35,12 +35,14 @@
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 
             'assets/dude.png',
-            { frameWidth: 32, frameHeight: 48 });
+            { frameWidth: 50, frameHeight: 70 });
     }
 
     function create(){
         this.add.image(900, 450, 'sky');
-        
+
+        // Maze Platforms:
+
         platforms = this.physics.add.staticGroup();
 
         platforms.create(50, 0, 'sidewall');
@@ -55,12 +57,93 @@
 
         platforms.create(450, 650, 'ground');
         platforms.create(1550, 650, 'ground');
+
+        // Player:
+
+        player = this.physics.add.sprite(150, 150, 'dude');
+
+        player.setBounce(0.2);
+        player.setCollideWorldBounds(true);
+
+        this.anims.create({
+            key: 'left',
+            frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'turn',
+            frames: [ { key: 'dude', frame: 4 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        cursors = this.input.keyboard.createCursorKeys();
+
+        this.physics.add.collider(player, platforms);
+
+        // Stars:
+        stars = this.physics.add.group({
+        key: 'star',
+        repeat: 16,
+        setXY: { x: 150, y: 150, stepX: 100 }
+        });
+
+        stars.children.iterate(function (child) {
+
+        child.setY(Phaser.Math.FloatBetween(150, 650));
+
+        });
+        this.physics.add.collider(stars, platforms);
+
+        this.physics.add.overlap(player, stars, collectStar, null, this);
+
+        function collectStar (player, star)
+        {
+            star.disableBody(true, true);
+        }
         
     }
 
     function update(){
+        if (cursors.left.isDown)
+        {
+            player.setVelocityX(-160);
 
+            player.anims.play('left', true);
+        }
+        else if (cursors.right.isDown)
+        {
+            player.setVelocityX(160);
+
+            player.anims.play('right', true);
+        }
+        else
+        {
+            player.setVelocityX(0);
+
+            player.anims.play('turn');
+        }
+
+        if (cursors.up.isDown)
+        {
+            player.setVelocityY(-160);
+        }
+        else if (cursors.down.isDown){
+            player.setVelocityY(160);
+        }
+        else{
+            player.setVelocityY(0);
+        }
     }
+
     </script>
 </body>
 </html>
