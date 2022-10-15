@@ -1,10 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en"> 
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+    <meta charset="UTF-8" />
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <script>
+    <script type="text/javascript">
+
+    const SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+    const SpeechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
+    const SpeechRecognitionEvent = window.SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
+
+    const commands = ['left','short left','right','right one step','up','short up','down','short down'];
+    const grammar = `#JSGF V1.0; grammar colors; public <color> = ${commands.join(' | ')};`
+    var speechCommand = null;
+
+    const recognition = new SpeechRecognition();
+    const speechRecognitionList = new SpeechGrammarList();
+    speechRecognitionList.addFromString(grammar, 1);
+
+    recognition.grammars = speechRecognitionList;
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    speechEnabled = true;
+
+    if (speechEnabled == true){
+        document.body.onkeyup = function(e) {
+            recognition.start();
+            console.log('Ready to receive a command.');
+        }
+
+    }else{
+        console.log('Speech not enabled, arrow keys are used for player movement.')
+    }
+    
+    recognition.onresult = (event) => {
+        const value = event.results[0][0].transcript;
+        console.log(`Result received: ${value}. Confidence: ${event.results[0][0].confidence}`);
+        speechCommand = value.toLowerCase();
+        console.log(speechCommand)
+
+    }
+
+    recognition.onspeechend = () => {
+        recognition.stop();
+    }
+
+    recognition.onnomatch = (event) => {
+        
+        console.log("I didn't recognize that command.");
+    }
+
     var config = {
         type: Phaser.AUTO,
         width: 1800,
@@ -51,8 +106,8 @@
 
         platforms = this.physics.add.staticGroup();
 
-        platforms.create(50, 0, 'sidewall');
-        platforms.create(900, 850, 'horizontalwall');
+        platforms.create(50, 350, 'sidewall');
+        platforms.create(900, 650, 'horizontalwall');
         platforms.create(900, 50, 'horizontalwall');
 
         platforms.create(450, 250, 'ground');
@@ -61,15 +116,13 @@
         platforms.create(750, 450, 'ground');
         platforms.create(1850, 450, 'ground');
 
-        platforms.create(450, 650, 'ground');
-        platforms.create(1550, 650, 'ground');
-
         // Player:
 
         player = this.physics.add.sprite(150, 150, 'dude');
 
         player.setBounce(0.2);
         player.setCollideWorldBounds(true);
+        player.setData('notMoving', true); 
 
         this.anims.create({
             key: 'left',
@@ -104,7 +157,7 @@
 
         stars.children.iterate(function (child) {
 
-        child.setY(Phaser.Math.FloatBetween(150, 650));
+        child.setY(Phaser.Math.FloatBetween(150, 450));
 
         });
         this.physics.add.collider(stars, platforms);
@@ -119,26 +172,146 @@
         }
         
         // Score Text:
-        scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        scoreText = this.add.text(25, 750, 'Score: 0', { fontSize: '50px', fill: 'white' });
+
+        commandText = this.add.text(25, 825, ('user input: '), {fontSize: '25px', fill:'white'});
+
     }
 
+
     function update(){
+        currentX = player.x;
+        currentY = player.y;
+
+        if (player.getData('notMoving')) {
+        player.setVelocity(0);
+        
+        commandText.setText('user input: ' + speechCommand);
+
+        // Steps Left:
+        if ( speechCommand == 'one step left' | speechCommand == '1 step left' ) {
+            newX = currentX - 1/3;
+            player.setX(newX);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 1000);
+        }
+        else if ( speechCommand == 'two steps left' | speechCommand == '2 steps left') {
+            newX = currentX - 1/3;
+            player.setX(newX);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 2000);
+        }
+        else if ( speechCommand == 'three steps left' | speechCommand == '3 steps left') {
+            newX = currentX - 1/3;
+            player.setX(newX);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 3000);
+        }
+
+        // Steps Right:
+        else if ( speechCommand == 'one step right' | speechCommand == '1 step right' ) {
+            newX = currentX + 1/3;
+            player.setX(newX);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 1000);
+        }
+
+        else if ( speechCommand == 'two steps right' | speechCommand == '2 steps right') {
+            newX = currentX + 1/3;
+            player.setX(newX);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 2000);
+        }
+        else if ( speechCommand == 'three steps right' | speechCommand == '3 steps right') {
+            newX = currentX + 1/3;
+            player.setX(newX);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 3000);
+        }
+
+        // Steps Up:
+        else if ( speechCommand == 'one step up' | speechCommand == '1 step up' ) {
+            newY = currentY - 1/3;
+            player.setY(newY);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 1000);
+        }
+
+        else if ( speechCommand == 'two steps up' | speechCommand == '2 steps up' ) {
+            newY = currentY - 1/3;
+            player.setY(newY);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 2000);
+        }
+
+        else if ( speechCommand == 'three steps up' | speechCommand == '3 steps up' ) {
+            newY = currentY - 1/3;
+            player.setY(newY);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 3000);
+        }
+
+        // Steps Down:
+        else if ( speechCommand == 'one step down' | speechCommand == '1 step down' ) {
+            newY = currentY + 1/3;
+            player.setY(newY);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 1000);
+        }
+
+        else if ( speechCommand == 'two steps down' | speechCommand == '2 steps down' ) {
+            newY = currentY + 1/3;
+            player.setY(newY);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 2000);
+        }
+
+        else if ( speechCommand == 'three steps down' | speechCommand == '3 steps down' ) {
+            newY = currentY + 1/3;
+            player.setY(newY);
+            setTimeout(() => {
+            player.setData('notMoving', true);
+            speechCommand = null;
+            }, 3000);
+        }
+
+        }
+
         if (cursors.left.isDown)
         {
             player.setVelocityX(-160);
-
             player.anims.play('left', true);
         }
         else if (cursors.right.isDown)
         {
             player.setVelocityX(160);
-
             player.anims.play('right', true);
         }
         else
         {
             player.setVelocityX(0);
-
             player.anims.play('turn');
         }
 
@@ -152,6 +325,11 @@
         else{
             player.setVelocityY(0);
         }
+    
+        if (score >= 170){
+            scoreText.setText('You win!');
+        }
+
     }
 
     </script>
