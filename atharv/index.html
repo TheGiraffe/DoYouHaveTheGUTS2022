@@ -18,7 +18,7 @@
     </div>
     <div>
         <label class="switch">
-            <input type="checkbox" id="1">
+            <input type="checkbox" id="box" onclick="toggle()">
             <span class="slider round"></span>
           </label>
           <p class="hello">off</p>
@@ -29,6 +29,7 @@
 <script type="text/javascript">
     const diagnostic = document.querySelector('.output');
     const button = document.querySelector('.hello');
+    var speechToggle = false;
 
 
     const SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
@@ -36,7 +37,7 @@
     const SpeechRecognitionEvent = window.SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
 
     const commands = ['left','short left','right','short right','up','short up','down','short down'];
-    const grammar = `#JSGF V1.0; grammar colors; public <color> = ${commands.join(' | ')};`
+    const grammar = `#JSGF V1.0; grammar colors; public <command> = ${commands.join(' | ')};`
     var speechCommand = null;
 
     const recognition = new SpeechRecognition();
@@ -67,24 +68,16 @@
     }
 
     recognition.onnomatch = (event) => {
-        
-        diagnostic.textContent = "I didn't recognize that color.";
+
+        diagnostic.textContent = "I didn't recognize that command.";
     }
 
     function toggle()
     {
-        if(document.getElementById("1").value=="OFF"){
-            document.getElementById("1").value="ON";
-            diagnostic.textContent = `ON`;
+        console.log("before toggle "+speechToggle);
+        speechToggle = !speechToggle;
+        console.log("After toggle "+speechToggle);
 
-        }
-
-        else if(document.getElementById("1").value=="ON"){
-            document.getElementById("1").value="OFF";
-            diagnostic.textContent = `OFF`;
-
-
-        }
     }
 
 
@@ -109,22 +102,36 @@
     var game = new Phaser.Game(config);
     var score = 0;
     var scoreText;
+    var moveRight = false;
+    var moveLeft = false;
+    var moveUp = false;
+    var moveDown = false;
+
 
     function preload ()
     {
-    this.load.image('sky', 'assets/sky.png');
-    this.load.image('ground', 'assets/platform.png');
-    this.load.image('star', 'assets/star.png');
-    this.load.image('bomb', 'assets/bomb.png');
-    this.load.spritesheet('dude', 
-        'assets/dude.png',
-        { frameWidth: 32, frameHeight: 48 }
-    );
+        this.load.image('sky', 'assets/sky.png');
+        this.load.image('ground', 'assets/platform.png');
+        this.load.image('star', 'assets/star.png');
+        this.load.image('bomb', 'assets/bomb.png');
+        this.load.spritesheet('dude', 
+            'assets/dude.png',
+            { frameWidth: 32, frameHeight: 48 }
+        );
+        this.load.image('cross','assets/gamepad.png');
+        this.load.image('cube','assets/gamecube.png');
+
+
+        
     }
 
+
     function create ()
-    {
+    {   
+
+
         cursors = this.input.keyboard.createCursorKeys();
+
         this.add.image(400, 300, 'sky');
         // this.add.image(400, 300, 'star')
         platforms = this.physics.add.staticGroup();
@@ -187,24 +194,58 @@
 
         scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
+        this.cross = this.add.image(50,550,'cross').setScale(0.2);
+        this.cross.alpha = 0.5;
+
+        this.btnUp = this.add.image(50,520,'cube').setScale(0.1);
+        this.btnUp.alpha = 0.01;
+
+        this.btnDown = this.add.image(50,580,'cube').setScale(0.1);
+        this.btnDown.alpha = 0.01;
+
+        this.btnLeft = this.add.image(18,550,'cube').setScale(0.1);
+        this.btnLeft.alpha = 0.01;
+
+        this.btnRight = this.add.image(82,550,'cube').setScale(0.1);
+        this.btnRight.alpha = 0.01;
+
+        this.btnUp.setInteractive();
+        this.btnDown.setInteractive();
+        this.btnLeft.setInteractive();
+        this.btnRight.setInteractive();
+        
+
+        this.btnRight.on('pointerdown', ()=>{
+            moveRight = true;
+        });
+        this.btnRight.on('pointerup', ()=>{
+            moveRight = false;
+        });
+
+        this.btnLeft.on('pointerdown', ()=>{
+            moveLeft = true;
+        });
+        this.btnLeft.on('pointerup', ()=>{
+            moveLeft = false;
+        });
+
+        this.btnUp.on('pointerdown', ()=>{
+            moveUp = true;
+        });
+        this.btnUp.on('pointerup', ()=>{
+            moveUp = false;
+        });
+
+        this.btnDown.on('pointerdown', ()=>{
+            moveDown = true;
+        });
+        this.btnDown.on('pointerup', ()=>{
+            moveDown = false;
+        });
+
 
     }
 
-//     function setfixedMovement(velocity, direction) {
-//     if (direction === 'up' || direction === 'short up') {
-//         player.setVelocityY(-velocity);
-//     } else if (direction === 'down' || direction === 'short down') {
-//         player.setVelocityY(velocity);
-//     } else if (direction === 'left' || direction === 'short left') {
-//         player.setVelocityX(-velocity);
-//     } else {
-//         player.setVelocityX(velocity);
-//     }
-//     player.setData(playerMoving, false);
-//     setTimeout(() => {
-//         player.setData(playerMoving, true);
-//     }, 1000);
-// }
 
 function setfixedMovement(velocity, direction) {
     if (direction === 'up') {
@@ -224,84 +265,71 @@ function setfixedMovement(velocity, direction) {
 }
 
 
-
     function update ()
     {
-        // if (cursors.left.isDown || speechCommand == 'left')
-        // {
-        //     player.setVelocityX(-160);
-        //     speechCommand = null;
-        //     player.anims.play('left', true);
-        // }
-        // else if (cursors.right.isDown || speechCommand == 'right')
-        // {
-        //     player.setVelocityX(160);
-        //     speechCommand = null;
-        //     player.anims.play('right', true);
-        // }
-        // else
-        // {
-        //     player.setVelocityX(0);
-        //     speechCommand = null;
-        //     player.anims.play('turn');
-        // }
-
-        // if (cursors.up.isDown && player.body.touching.down)
-        // {
-        //     player.setVelocityY(-400);
-        // }
-
-
-    //     if (player.getData('notMoving')) {
-    //     player.setVelocity(0);
-    //     if (cursors.left.isDown) {   
-    //         setfixedMovement(300, 'left');
-    //     } else if (cursors.right.isDown) {
-    //         setfixedMovement(300, 'right');
-    //     }
-
-    //     if (cursors.up.isDown) {
-    //         setfixedMovement(300, 'up');
-    //     } else if (cursors.down.isDown) {
-    //         setfixedMovement(300, 'down');
-    //     }
-    // }
-
-
-    if (player.getData('notMoving')) {
-        player.setVelocity(0);
-        if (speechCommand == 'left') {   
-            setfixedMovement(250, 'left');
-        }
-        else if(speechCommand == 'short left'){
-            setfixedMovement(100, 'left');
-        }
-        else if ( speechCommand == 'right') {
-            setfixedMovement(250, 'right');
-        }
-        else if ( speechCommand == 'short right') {
-            setfixedMovement(100, 'right');
-        }
-        else if (speechCommand == 'up') {
-            setfixedMovement(250, 'up');
-        } 
-        else if (speechCommand == 'short up') {
-            setfixedMovement(100, 'up');
-        } 
-        else if (speechCommand == 'down') {
-            setfixedMovement(250, 'down');
-        }
-        else if (speechCommand == 'short down') {
-            setfixedMovement(100, 'down');
-        }
-    }
-
-
-
  
+    if(speechToggle){
 
+        if (player.getData('notMoving')) {
+            player.setVelocity(0);
+            if (speechCommand == 'left' || cursors.left.isDown) {   
+                setfixedMovement(250, 'left');
+            }
+            else if(speechCommand == 'short left'){
+                setfixedMovement(100, 'left');
+            }
+            else if ( speechCommand == 'right' || cursors.right.isDown) {
+                setfixedMovement(250, 'right');
+            }
+            else if ( speechCommand == 'short right') {
+                setfixedMovement(100, 'right');
+            }
+            else if (speechCommand == 'up' || cursors.up.isDown) {
+                setfixedMovement(250, 'up');
+            } 
+            else if (speechCommand == 'short up') {
+                setfixedMovement(100, 'up');
+            } 
+            else if (speechCommand == 'down' || cursors.down.isDown) {
+                setfixedMovement(250, 'down');
+            }
+            else if (speechCommand == 'short down') {
+                setfixedMovement(100, 'down');
+            }
+        }
 
+    }
+    else{
 
+        if (cursors.left.isDown || moveLeft)
+        {
+            player.setVelocityX(-160);
+            player.anims.play('left', true);
+        }
+        else if (cursors.right.isDown || moveRight)
+        {
+            player.setVelocityX(160);
+            player.anims.play('right', true);
+        }
+        else
+        {
+            player.setVelocityX(0);
+            player.anims.play('turn');
+        }
+
+        if (cursors.up.isDown || moveUp)
+        {
+            player.setVelocityY(-160);
+        }
+        else if (cursors.down.isDown || moveDown){
+            player.setVelocityY(160);
+        }
+        else{
+            player.setVelocityY(0);
+        }
+
+    }
+    
 
 
     }
